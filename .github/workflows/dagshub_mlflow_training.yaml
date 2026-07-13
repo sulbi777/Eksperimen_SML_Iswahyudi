@@ -1,0 +1,37 @@
+
+name: DagsHub MLflow Training
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the main branch
+
+jobs:
+  train_model:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9' # Or adjust to your Python version
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Ensure requirements.txt is at the root of your repository, or adjust path below
+        pip install -r requirements.txt
+
+    - name: Set DagsHub Environment Variables
+      run: |
+        echo "MLFLOW_TRACKING_URI=https://dagshub.com/${{ secrets.DAGSHUB_REPO }}.mlflow" >> $GITHUB_ENV
+        echo "MLFLOW_TRACKING_USERNAME=${{ secrets.DAGSHUB_USERNAME }}" >> $GITHUB_ENV
+        echo "MLFLOW_TRACKING_PASSWORD=${{ secrets.DAGSHUB_TOKEN }}" >> $GITHUB_ENV
+        echo "DAGSHUB_USER_TOKEN=${{ secrets.DAGSHUB_TOKEN }}" >> $GITHUB_ENV
+
+    - name: Run MLflow Training with Feature Engineering
+      # Ensure modelling_tuning.py is at the root of your repository, or adjust path below
+      run: python modelling_tuning.py
