@@ -1,27 +1,38 @@
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 import os
 
-def run_preprocessing(input_path, output_dir):
-    df = pd.read_csv(input_path)
-
-    # Melt and Clean
-    prod_cols = [col for col in df.columns if 'Produksi' in col and '(kuintal)' in col]
-    df_melted = df.melt(id_vars=['Provinsi'], value_vars=prod_cols, var_name='Komoditas', value_name='Prod_Kw')
-    df_melted['Prod_Kw'] = df_melted['Prod_Kw'].replace('-', np.nan).astype(float)
-    df_melted = df_melted.dropna().copy()
-    df_melted['produksi_ton'] = df_melted['Prod_Kw'] / 10
-
-    # Encoding
-    le = LabelEncoder()
-    df_melted['prov_enc'] = le.fit_transform(df_melted['Provinsi'])
-    df_melted['komo_enc'] = le.fit_transform(df_melted['Komoditas'])
-
-    # Save
+def run_preprocessing():
+    print("Memulai proses otomatisasi preprocessing...")
+    
+    # 1. Pastikan folder output tersedia
+    output_dir = 'namadataset_preprocessing'
     os.makedirs(output_dir, exist_ok=True)
-    df_melted.to_csv(os.path.join(output_dir, 'automated_preprocessed.csv'), index=False)
-    print("Preprocessing otomatis selesai.")
+    
+    # 2. Load raw data
+    raw_path = 'namadataset_raw/Produksi Tanaman.csv'
+    if not os.path.exists(raw_path):
+        raise FileNotFoundError(f"File {raw_path} tidak ditemukan!")
+        
+    df = pd.read_csv(raw_path)
+    
+    # 3. Data Cleaning & Preprocessing
+    # Mengganti karakter '-' menjadi angka 0 (karena BPS sering pakai '-' untuk nol)
+    df = df.replace('-', 0)
+    
+    # Memisahkan kolom kategorikal (Provinsi) dan numerikal (Produksi)
+    kolom_kategori = ['Provinsi']
+    kolom_numerik = df.columns.drop(kolom_kategori)
+    
+    # Mengubah semua kolom produksi menjadi numerik
+    df[kolom_numerik] = df[kolom_numerik].apply(pd.to_numeric, errors='coerce').fillna(0)
+    
+    # (Opsional) Lakukan Label Encoding untuk Provinsi jika model Anda membutuhkannya
+    # df['Provinsi_Encoded'] = df['Provinsi'].astype('category').cat.codes
+    
+    # 4. Simpan data yang sudah bersih
+    output_path = os.path.join(output_dir, 'data_clean.csv')
+    df.to_csv(output_path, index=False)
+    print(f"Preprocessing selesai! Data siap latih disimpan di: {output_path}")
 
-if __name__ == '__main__':
-    run_preprocessing('../Produksi_Tanaman_Raw.csv', 'namadataset_preprocessing')
+if __name__ == "__main__":
+    run_preprocessing()
