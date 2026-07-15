@@ -9,7 +9,7 @@ def run_preprocessing():
     os.makedirs(output_dir, exist_ok=True)
     
     # 2. Load raw data
-    raw_path = 'namadataset_raw/Produksi Tanaman.csv'
+    raw_path = 'namadataset_raw/produksi tanaman.csv'
     if not os.path.exists(raw_path):
         raise FileNotFoundError(f"File {raw_path} tidak ditemukan!")
         
