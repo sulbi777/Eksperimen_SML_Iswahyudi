@@ -1,3 +1,42 @@
+import os
+import sys
+
+def safe_dagshub_login():
+    user = os.getenv("DAGSHUB_USER")
+    repo = os.getenv("DAGSHUB_REPO")
+    ml_username = os.getenv("MLFLOW_TRACKING_USERNAME")
+    ml_password = os.getenv("MLFLOW_TRACKING_PASSWORD")
+    token = os.getenv("DAGSHUB_API_TOKEN") or os.getenv("DAGSHUB_TOKEN")
+
+    if not (token or (user and repo)):
+        print("WARNING: Tidak ada kredensial DagsHub (DAGSHUB_API_TOKEN atau DAGSHUB_USER/DAGSHUB_REPO). Melewati login DagsHub.")
+        return False
+
+    try:
+        import dagshub
+        if token:
+            # jika library mendukung token-based login
+            dagshub.login(token=token)
+        else:
+            # fallback ke username/password (jika anda memang memakai ini)
+            dagshub.login(user=user, repo=repo, username=ml_username, password=ml_password)
+        print("DagsHub login sukses")
+        return True
+    except Exception as e:
+        print("ERROR: DagsHub login gagal:", repr(e))
+        # jika exception punya atribut response, tunjukkan detailnya untuk debugging
+        resp = getattr(e, "response", None)
+        if resp is not None:
+            try:
+                print("Response status:", resp.status_code)
+                print("Response body:", resp.text)
+            except Exception:
+                pass
+        return False
+
+# Panggil ini sebelum memulai mlflow tracking / logging ke DagsHub
+safe_dagshub_login()
+
 import argparse, json, os
 from pathlib import Path
 import dagshub, joblib, matplotlib.pyplot as plt, mlflow, mlflow.sklearn, pandas as pd, seaborn as sns
