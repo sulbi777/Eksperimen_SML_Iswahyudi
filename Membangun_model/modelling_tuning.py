@@ -23,7 +23,7 @@ mlflow.set_experiment("model-tuning")
 
 # Contoh alur training sederhana (sesuaikan dengan data & preprocessing Anda)
 # Pastikan file data/variabel berikut benar adanya di repo
-data = pd.read_csv("namadataset_processed/train.csv")  # contoh path
+data = pd.read_csv("namadataset_preprocessing/train.csv")  # contoh path
 X = data.drop(columns=["target"])
 y = data["target"]
 
