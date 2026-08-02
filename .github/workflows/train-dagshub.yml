@@ -1,0 +1,31 @@
+name: train-and-track-dagshub
+
+on:
+  workflow_dispatch:
+    inputs:
+      n_iter:
+        description: "Jumlah konfigurasi hyperparameter yang diuji"
+        required: true
+        default: "12"
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements.txt
+      - run: python download_raw_data.py
+      - run: python preprocessing/automate_Iswahyudi.py
+      - name: Tune model and log to DagsHub
+        env:
+          DAGSHUB_USER: ${{ secrets.DAGSHUB_USER }}
+          DAGSHUB_REPO: ${{ secrets.DAGSHUB_REPO }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+        run: python Membangun_model/modelling_tuning.py --n-iter ${{ inputs.n_iter }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: training-evidence
+          path: Membangun_model/artifacts/

@@ -1,0 +1,11 @@
+{
+  "raw_rows": 45211,
+  "rows_after_dedup": 45211,
+  "train_rows": 36168,
+  "test_rows": 9043,
+  "n_numeric": 7,
+  "n_categorical": 9,
+  "encoded_features": 47,
+  "target_positive_rate": 0.11698,
+  "random_state": 42
+}
